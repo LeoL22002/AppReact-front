@@ -15,10 +15,9 @@ socket.on('connect_error', (error) => {
 const App = () => {
   
   useEffect(() => {
-    // Conectar al WebSocket cuando la app se carga
+   
     socket.connect();
 
-    // Desconectar cuando la app se cierre o se desmonte
     return () => {
       socket.disconnect();
     };
