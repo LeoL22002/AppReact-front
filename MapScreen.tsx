@@ -1,14 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Button, Alert, Text } from 'react-native';
 import MapView, { Marker,Polyline } from 'react-native-maps';
-import Geolocation from 'react-native-geolocation-service'; // Para obtener la ubicación del usuario
-import io from 'socket.io-client'; // Asegúrate de instalar socket.io-client
+import Geolocation from 'react-native-geolocation-service'; 
+import io from 'socket.io-client'; 
+import { request, PERMISSIONS, RESULTS } from 'react-native-permissions'; 
 
 // Definir el tipo para Location
 interface Location {
   latitude: number;
   longitude: number;
 }
+import { PermissionsAndroid, Platform } from 'react-native';
+
+const requestLocationPermission = async () => {
+  if (Platform.OS === 'android') {
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      {
+        title: 'Permiso de ubicación requerido',
+        message: 'Esta aplicación necesita acceso a tu ubicación para funcionar correctamente.',
+        buttonNeutral: 'Preguntar después',
+        buttonNegative: 'Cancelar',
+        buttonPositive: 'Aceptar',
+      }
+    );
+    return granted === PermissionsAndroid.RESULTS.GRANTED;
+  }
+  return true; // iOS maneja permisos automáticamente
+};
 
 const MapScreen = () => {
   // Estado para manejar la ubicación del usuario y la ubicación de "B"
@@ -27,7 +46,58 @@ const MapScreen = () => {
   const socket = io('http://192.168.0.101:3000'); 
 
   // Obtener la ubicación actual del usuario al cargar el componente
+  // useEffect(() => {
+  //   const checkPermissionsAndGetLocation = async () => {
+  //     try {
+  //       const permission =
+  //         Platform.OS === 'android'
+  //           ? PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION
+  //           : PERMISSIONS.IOS.LOCATION_WHEN_IN_USE;
+
+  //       const result = await request(permission);
+
+  //       if (result === RESULTS.GRANTED) {
+  //         Geolocation.getCurrentPosition(
+  //           (position) => {
+  //             const { latitude, longitude } = position.coords;
+  //             setRegion({
+  //               latitude,
+  //               longitude,
+  //               latitudeDelta: 0.0922,
+  //               longitudeDelta: 0.0421,
+  //             });
+  //           },
+  //           (error) => {
+
+  //             console.error(`Error con la ubicacion ${error}`);
+  //             Alert.alert('Error', 'No se pudo obtener la ubicación');
+  //           },
+  //           { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+  //         );
+  //       } else {
+  //         console.log(`Permisos necesarios', 'Por favor, habilita los permisos de ubicación`);
+  //         Alert.alert('Permisos necesarios', 'Por favor, habilita los permisos de ubicación');
+  //       }
+  //     } catch (error) {
+  //       console.log(`Errorrrr: ${error}`);
+  //       console.error(error);
+  //     }
+  //   };
+
+  //   checkPermissionsAndGetLocation();
+
+  //   socket.on('locationUpdate', (data: Location) => {
+  //     console.log('Ubicación de B recibida:', data);
+  //     setLocationB(data);
+  //   });
+
+  //   return () => {
+  //     socket.disconnect();
+  //   };
+  // }, []);
+
   useEffect(() => {
+    
     Geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;

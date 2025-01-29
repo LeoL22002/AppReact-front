@@ -64,7 +64,7 @@ const LocationSender = () => {
           enableHighAccuracy: true, 
           timeout: 15000, 
           maximumAge: 10000,
-          forceRequestLocation: true // Forzar la solicitud de ubicación
+          forceRequestLocation: true
         }
       );
     } catch (error) {
